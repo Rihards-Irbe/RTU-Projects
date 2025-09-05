@@ -6,3 +6,5 @@ this will load all parameters and open simulation
 ![Settings](model_settings_values.png)
 3. Remove the F2C block:
 ![Model#1](modelnr1.png)
+4. Click the run button and open -> PlotResults block:
+   ![Measuring_results](measuring_results.png)
