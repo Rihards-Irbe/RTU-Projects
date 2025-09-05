@@ -42,3 +42,51 @@ Answer: With Set Point 17 and Avg Outdoor Temp of 12 I the cost is 79.18, which 
 | Task | Indoor Temp (°C) | Budget ($) | Outdoor Temp (°C / °F) | Error |
 |------|------------------|------------|------------------------|-------|
 | 5    | 17               | 80         | -11 / 12               | 1.03% |
+9. Now for the last task:
+
+Modified Relay Function for Air Conditioning:
+Mathematical Expression:
+u(t) = { 0  when ΔT > 2.7778°C   (room cool enough, cooling OFF)
+       { 1  when ΔT < -2.7778°C  (room too hot, cooling ON)
+Where ΔT = T_setpoint - T_room
+In Fahrenheit terms (original):
+u(t) = { 0  when ΔT > 5°F   (cooling OFF)
+       { 1  when ΔT < -5°F  (cooling ON)
+Implementation Changes Made:
+
+Switch on point: 2.7778°C (kept same)
+Switch off point: -2.7778°C (kept same)
+Output when on: 0 (changed from 1)
+Output when off: 1 (changed from 0)
+
+Results:
+
+Air conditioning cost: $104.4 for 2 days
+System behavior: Successfully maintains temperature by cooling
+Cost comparison: Higher than heating costs (~$60-98), which is expected for cooling systems
+
+What Happened
+Original System (Tasks 1-5):
+
+House gets cold → Heater turns ON → Adds heat to warm the house
+House gets warm enough → Heater turns OFF
+
+Modified System (Task 6):
+
+House gets hot → Air conditioner turns ON → Removes heat to cool the house
+House gets cool enough → Air conditioner turns OFF
+
+The Key Change
+You changed the sildītājs (heater) block to work as an air conditioner/cooler by reversing when it operates:
+
+Before: Operated when room was too cold (to heat it up)
+After: Operates when room is too hot (to cool it down)
+
+Why the Cost Increased
+The cost went from ~$60-98 (heating) to $104.4 (cooling) because:
+
+Air conditioning typically costs more than heating
+The system is now removing heat instead of adding it
+Cooling requires more energy to maintain the same comfort level
+
+So yes - instead of the heater warming the house when it got cold, the system now cools the house when it gets hot! You successfully converted a heating system into an air conditioning system. 🌡️❄️
