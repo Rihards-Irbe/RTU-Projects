@@ -36,3 +36,9 @@ Error calculation: |($80.65 - $80.00) / $80.00| × 100% = 0.81%
 | Task | Indoor Temp (°C) | Budget ($) | Outdoor Temp (°C / °F) | Error |
 |------|------------------|------------|------------------------|-------|
 | 4    | 22               | 80         | -6.1 / 21              | 0.81% |
+8. Now we need to find what indoor temperature we can maintain with a $80 budget when outdoor temperature is fixed at -11°C (Variant 7's specified outdoor temp). !Keep error under 5%
+Answer: With Set Point 17 and Avg Outdoor Temp of 12 I the cost is 79.18, which is closer to $80.
+
+| Task | Indoor Temp (°C) | Budget ($) | Outdoor Temp (°C / °F) | Error |
+|------|------------------|------------|------------------------|-------|
+| 5    | 17               | 80         | -11 / 12               | 1.03% |
