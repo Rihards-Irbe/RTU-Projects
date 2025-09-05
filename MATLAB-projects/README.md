@@ -3,3 +3,4 @@
    open('sldemo_househeat.slx') <enter>
 this will load all parameters and open simulation
 2. Once Simulink is open go to -> Modeling -> Model Settings and set these values as this:
+![Settings](model_settings_values.png)
