@@ -12,7 +12,7 @@ this will load all parameters and open simulation
 ![Model#2](modelnr2-fixed.png)
 5. Now run this simulation multiple times with various temperature changes, results table for 7th variant:  
 
-| Indoor Temp | Outdoor Temp | Costs |
+| Indoor Temp | Outdoor Temp | Cost $ |
 |-------------|--------------|-------|
 | 22          | 46           | 39.91 |
 | 22          | 39           | 51.18 |
@@ -20,3 +20,19 @@ this will load all parameters and open simulation
 | 22          | 25           | 73.54 |
 | 22          | 18           | 86.01 |
 | 22          | 10           | 98.42 |
+
+6.Now we use this data to predict temperatures with budget constraints. For Variant 7, we have a budget of $80.
+Looking at table data:
+
+At -8°C (18) outdoor: cost is $86.01 (over budget)
+At -4°C (25) outdoor: cost is $73.54 (under budget)
+
+So the limit is somewhere between -8°C (18) and -4°C (25).
+7. With Outdoor Temp of 21 the cost is $80.65 is very close to the target budget of $80. Let's calculate the error:
+Predicted outdoor temperature: -6.1°C (21°F)
+Experimental cost: $80.65
+Target budget (Cd): $80.00
+Error calculation: |($80.65 - $80.00) / $80.00| × 100% = 0.81%
+| Task | Indoor Temp (°C) | Budget ($) | Outdoor Temp (°C / °F) | Error |
+|------|------------------|------------|------------------------|-------|
+| 4    | 22               | 80         | -6.1 / 21              | 0.81% |
