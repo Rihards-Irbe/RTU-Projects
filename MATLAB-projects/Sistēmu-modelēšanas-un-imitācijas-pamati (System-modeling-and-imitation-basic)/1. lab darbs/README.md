@@ -3,13 +3,13 @@
    open('sldemo_househeat.slx') <enter>
 this will load all parameters and open simulation
 2. Once Simulink is open go to -> Modeling -> Model Settings and set these values as this:
-![Settings](model_settings_values.png)
+![Settings](project_images/model_settings_values.png)
 3. Remove the F2C block:
-![Model#1](modelnr1.png)
+![Model#1](project_images/modelnr1.png)
 4. Click the run button and open -> PlotResults block:
-![Measuring_results](measuring_results.png)
+![Measuring_results](project_images/measuring_results.png)
 4. Now for this test 7th variant was choosen from the 1.Pielikums table (Table values: (Indoor temperature: 22°C, Budget: $80, Outdoor temperature: -11°C)). Now change the Set Point value to 22, then add the following block: Simulation -> Library Browser -> Simulink -> Sinks -> Display. Then connect this Display to "cost" block. Then change the Avg Outdoor Temp to 46.
-![Model#2](modelnr2-fixed.png)
+![Model#2](project_images/modelnr2-fixed.png)
 5. Now run this simulation multiple times with various temperature changes, results table for 7th variant:  
 
 | Indoor Temp | Outdoor Temp | Cost $ |
