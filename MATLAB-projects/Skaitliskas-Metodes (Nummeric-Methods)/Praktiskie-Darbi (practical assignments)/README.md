@@ -1,14 +1,14 @@
-1.1. Uzdevums.
+uzdevums_1
 ![1.1 Uzd](project_images/Task%201.1.png)
 
-1.2. Uzdevums.
+uzdevums_2
 ![1.2 Uzd](project_images/Task%201.2.png)
 
-1.3. Uzdevums.
+uzdevums_3
 ![1.3 Uzd](project_images/Task%201.3.png)
 
-1.4. Uzdevums.
+uzdevums_4
 ![1.4 Uzd](project_images/Task%201.4.png)
 
-1.5. Uzdevums.
+uzdevums_5
 ![1.5 Uzd](project_images/Task%201.5.png)
