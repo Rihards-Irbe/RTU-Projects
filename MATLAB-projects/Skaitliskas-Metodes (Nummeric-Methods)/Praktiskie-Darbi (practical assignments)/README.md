@@ -49,3 +49,7 @@
 [**uzdevums_2.2**](https://github.com/Rihards-Irbe/RTU-Projects/blob/main/MATLAB-projects/Skaitliskas-Metodes%20(Nummeric-Methods)/Praktiskie-Darbi%20(practical%20assignments)/uzdevums_8.m)
 
 ![2.2 Uzd](project_images/Task%202.2.png)
+
+[**uzdevums_2.3**](https://github.com/Rihards-Irbe/RTU-Projects/blob/main/MATLAB-projects/Skaitliskas-Metodes%20(Nummeric-Methods)/Praktiskie-Darbi%20(practical%20assignments)/uzdevums_9.m)
+
+![2.3 Uzd](project_images/Task%202.3.png)
