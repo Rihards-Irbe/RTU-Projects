@@ -50,3 +50,7 @@
 
 ![10 Uzd](../project_images/Task%204.3.png)
 
+[**uzdevums_11**](https://github.com/Rihards-Irbe/RTU-Projects/blob/main/MATLAB-projects/Skaitliskas-Metodes%20(Nummeric-Methods)/Praktiskie-Darbi%20(practical%20assignments)/2kd/uzdevums_11.m)
+
+![11 Uzd](../project_images/Task%204.4.png)
+
