@@ -29,3 +29,7 @@
 [**5. c) Grafs**](https://github.com/Rihards-Irbe/RTU-Projects/blob/main/MATLAB-projects/Skaitliskas-Metodes%20(Nummeric-Methods)/Praktiskie-Darbi%20(practical%20assignments)/2kd/uzdevums_5.m#L38)
 
 ![5c](../project_images/Task%203.5c.png)
+
+[**uzdevums_6**](https://github.com/Rihards-Irbe/RTU-Projects/blob/main/MATLAB-projects/Skaitliskas-Metodes%20(Nummeric-Methods)/Praktiskie-Darbi%20(practical%20assignments)/2kd/uzdevums_6.m)
+
+![6 Uzd](../project_images/Task%203.6.png)
