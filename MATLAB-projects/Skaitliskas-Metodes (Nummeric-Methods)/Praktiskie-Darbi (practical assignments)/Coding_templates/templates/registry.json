@@ -1,0 +1,184 @@
+[
+  {
+    "autofill": [
+      {
+        "enabled": true,
+        "fn": "auto_roots_1d",
+        "args": ["eq", "xmin", "xmax", "h"],
+        "provides": ["x_app", "n_roots"]
+      }
+    ],
+    "description": "Atrisināt vienādojumu <equation(eq)> ar Ņūtona metodi (precizitāte: <var(epsi)>)",
+    "features": [
+      {
+        "enabled": true,
+        "feature": "graph_feature",
+        "slot": "plot",
+        "description": "Uzzīmē f(x) grafiku (robežas no plot_*)."
+      },
+      {
+        "enabled": true,
+        "feature": "smallest_root_feature",
+        "slot": "after_sort",
+        "description": "Izvada min/max sakni pēc sort()."
+      }
+    ],
+    "id": "task61_newton_1d",
+    "inputs": [
+      { "key": "eq", "label": "Vienādojums", "type": "equation1d", "default": "sin(x+0.2)=x/4+3", "required": true, "min": [], "feature": "" },
+      { "key": "xmin", "label": "Intervāls xmin", "type": "double", "default": -20, "required": true, "min": [], "feature": "" },
+      { "key": "xmax", "label": "Intervāls xmax", "type": "double", "default": 10, "required": true, "min": [], "feature": "" },
+      { "key": "h", "label": "Grafika solis h", "type": "double", "default": 0.01, "required": true, "min": 0, "feature": "" },
+      { "key": "iter", "label": "Iterācijas", "type": "int", "default": 6, "required": true, "min": 0, "feature": "" },
+      { "key": "epsi", "label": "Precizitāte", "type": "double", "default": 1e-6, "required": true, "min": 0, "feature": "" },
+      { "key": "x_app", "label": "Sākuma tuvinājumi x_app", "type": "vector", "default": [], "required": false, "min": [], "feature": "" },
+      { "key": "n_roots", "label": "Sakņu skaits n_roots", "type": "int", "default": 0, "required": false, "min": 0, "feature": "" },
+      { "key": "plot_xmin", "label": "Grafika x min", "type": "double", "default": -20, "required": true, "min": [], "feature": "graph_feature" },
+      { "key": "plot_xmax", "label": "Grafika x max", "type": "double", "default": 10, "required": true, "min": [], "feature": "graph_feature" },
+      { "key": "plot_ymin", "label": "Grafika y min", "type": "double", "default": -8, "required": true, "min": [], "feature": "graph_feature" },
+      { "key": "plot_ymax", "label": "Grafika y max", "type": "double", "default": 8, "required": true, "min": [], "feature": "graph_feature" }
+    ],
+    "template_file": "task61_newton_1d.tmpl",
+    "title": "6.1 sin(x+0.2)=x/4+3 — Ņūtona metode"
+  },
+  {
+    "autofill": [],
+    "description": "Atrisināt vienādojumu <equation(eq)> ar sekantu (sekanšu) metodi (precizitāte: <var(epsi)>)",
+    "features": [
+      {
+        "enabled": true,
+        "feature": "graph_feature",
+        "slot": "plot",
+        "description": "Uzzīmē f(x) grafiku (robežas no plot_* un solis h)."
+      },
+      {
+        "enabled": true,
+        "feature": "smallest_root_feature",
+        "slot": "after_sort",
+        "description": "Izvada min/max sakni pēc sort()."
+      }
+    ],
+    "id": "task65_secant_1d",
+    "inputs": [
+      { "key": "eq", "label": "Vienādojums", "type": "equation1d", "default": "4*cos(x^2)-sqrt(1+x^3)=0", "required": true, "min": [], "feature": "" },
+      { "key": "x0", "label": "Sākuma tuvinājums x0 (var būt vektors)", "type": "double", "default": 1, "required": true, "min": [], "feature": "" },
+      { "key": "x1", "label": "Sākuma tuvinājums x1 (var būt vektors)", "type": "double", "default": 1.5, "required": true, "min": [], "feature": "" },
+      { "key": "iter", "label": "Iterācijas", "type": "int", "default": 6, "required": true, "min": 0, "feature": "" },
+      { "key": "epsi", "label": "Precizitāte", "type": "double", "default": 0.0001, "required": true, "min": 0, "feature": "" },
+      { "key": "plot_xmin", "label": "Grafika x min", "type": "double", "default": 0, "required": true, "min": [], "feature": "graph_feature" },
+      { "key": "plot_xmax", "label": "Grafika x max", "type": "double", "default": 2, "required": true, "min": [], "feature": "graph_feature" },
+      { "key": "plot_ymin", "label": "Grafika y min", "type": "double", "default": -4, "required": true, "min": [], "feature": "graph_feature" },
+      { "key": "plot_ymax", "label": "Grafika y max", "type": "double", "default": 4, "required": true, "min": [], "feature": "graph_feature" },
+      { "key": "h", "label": "Grafika solis h", "type": "double", "default": 0.01, "required": true, "min": 0, "feature": "graph_feature" }
+    ],
+    "template_file": "task65_secant_1d.tmpl",
+    "title": "6.5 4cos(x^2)-sqrt(1+x^3)=0 — Sekanšu metode"
+  },
+  {
+    "autofill": [
+      {
+        "enabled": true,
+        "fn": "auto_guess_sys2d",
+        "args": ["eq1", "eq2", "x1_area", "x2_area", "hscan"],
+        "provides": ["xapp"]
+      }
+    ],
+    "description": "Atrisināt sistēmu ar Ņūtona metodi apgabalā (precizitāte: <var(epsi)>).",
+    "features": [
+      {
+        "enabled": true,
+        "feature": "system_area_feature",
+        "slot": "area",
+        "description": "Apgabala ievade ar nevienādībām (piem. -1<=x1<=4, -3<=x2<=2)."
+      },
+      {
+        "enabled": true,
+        "feature": "system_graph_feature",
+        "slot": "plot",
+        "description": "Uzzīmē 2D sistēmas kontūras dotajā apgabalā."
+      },
+      {
+        "enabled": true,
+        "feature": "system_findvar_feature",
+        "slot": "output",
+        "description": "Izvada izvēlēto mainīgo (x1/x2) ar norādīto zīmju skaitu aiz komata."
+      }
+    ],
+    "id": "task_newton_system_2d",
+    "inputs": [
+      { "key": "eq1", "label": "f1(x1,x2)=0", "type": "string", "default": "cos(2*x2-3)-6*x1+2=0", "required": true, "min": [], "feature": "" },
+      { "key": "eq2", "label": "f2(x1,x2)=0", "type": "string", "default": "3*x2-sin(2*x1+1)-4=0", "required": true, "min": [], "feature": "" },
+      { "key": "xapp", "label": "Sākuma tuvinājums [x1 x2]", "type": "vector", "default": [0.9, 0.6], "required": true, "min": [], "feature": "" },
+      { "key": "hscan", "label": "Auto-scan solis hscan", "type": "double", "default": 0.02, "required": true, "min": 0, "feature": "" },
+      { "key": "iter", "label": "Iterācijas (max)", "type": "int", "default": 50, "required": true, "min": 1, "feature": "" },
+      { "key": "epsi", "label": "Precizitāte", "type": "double", "default": 1e-7, "required": true, "min": 0, "feature": "" },
+      { "key": "x1_area", "label": "Apgabals priekš x1", "type": "string", "default": "-1<=x1<=4", "required": true, "min": [], "feature": "system_area_feature" },
+      { "key": "x2_area", "label": "Apgabals priekš x2", "type": "string", "default": "-3<=x2<=2", "required": true, "min": [], "feature": "system_area_feature" },
+      { "key": "target_var", "label": "Ko izvadīt (x1 vai x2)", "type": "string", "default": "x2", "required": true, "min": [], "feature": "system_findvar_feature" },
+      { "key": "ndp", "label": "Zīmes aiz komata", "type": "int", "default": 4, "required": true, "min": 0, "feature": "system_findvar_feature" }
+    ],
+    "template_file": "task_newton_system_2d.tmpl",
+    "title": "Ņūtona metode — 2D sistēma"
+  },
+  {
+    "autofill": [],
+    "description": "Atrisināt Koši problēmu 1. kārtas ODE ar ode45. Var ievadīt ln(x) un e^... .",
+    "features": [],
+    "id": "task_ode1_cauchy_1st_order",
+    "inputs": [
+      {
+        "key": "ode_eq",
+        "label": "ODE (izmanto x,y,yp)",
+        "type": "string",
+        "default": "yp - y*e^(-y) = sin(x + y)",
+        "required": true,
+        "min": [],
+        "feature": ""
+      },
+      { "key": "x0", "label": "Intervāls sākums x0", "type": "double", "default": 1, "required": true, "min": [], "feature": "" },
+      { "key": "x1", "label": "Intervāls beigas x1", "type": "double", "default": 3, "required": true, "min": [], "feature": "" },
+
+      { "key": "y0", "label": "Sākuma nosacījums y(x0)", "type": "double", "default": 2, "required": true, "min": [], "feature": "" },
+
+      { "key": "xq", "label": "Aprēķina punkts xq", "type": "double", "default": 1.95, "required": true, "min": [], "feature": "" },
+
+      { "key": "epsi", "label": "Precizitāte epsi", "type": "double", "default": 0.0001, "required": true, "min": 0, "feature": "" },
+
+      { "key": "target_var", "label": "Ko izvadīt (y / yp)", "type": "string", "default": "y", "required": true, "min": [], "feature": "" },
+      { "key": "ndp", "label": "Zīmes aiz komata", "type": "int", "default": 4, "required": true, "min": 0, "feature": "" }
+    ],
+    "template_file": "task_ode1_cauchy_1st_order.tmpl",
+    "title": "Koši problēma — 1. kārtas ODE (ode45)"
+  },
+  {
+    "autofill": [],
+    "description": "Atrisināt Koši problēmu 2. kārtas ODE ar ode45. Var ievadīt ln(x) un e^... .",
+    "features": [],
+    "id": "task_ode2_cauchy_2nd_order",
+    "inputs": [
+      {
+        "key": "ode_eq",
+        "label": "ODE (izmanto x,y,yp,ypp)",
+        "type": "string",
+        "default": "(9 + x^2*ln(x))*ypp - (3 + x*sqrt(x))*yp + x*y = sin(x + 4)",
+        "required": true,
+        "min": [],
+        "feature": ""
+      },
+      { "key": "x0", "label": "Intervāls sākums x0", "type": "double", "default": 3, "required": true, "min": [], "feature": "" },
+      { "key": "x1", "label": "Intervāls beigas x1", "type": "double", "default": 8, "required": true, "min": [], "feature": "" },
+
+      { "key": "y0",  "label": "Sākuma nosacījums y(x0)",  "type": "double", "default": 2,  "required": true, "min": [], "feature": "" },
+      { "key": "yp0", "label": "Sākuma nosacījums y'(x0)", "type": "double", "default": 11, "required": true, "min": [], "feature": "" },
+
+      { "key": "xq", "label": "Aprēķina punkts xq", "type": "double", "default": 7.46, "required": true, "min": [], "feature": "" },
+
+      { "key": "epsi", "label": "Precizitāte epsi", "type": "double", "default": 0.0001, "required": true, "min": 0, "feature": "" },
+
+      { "key": "target_var", "label": "Ko izvadīt (y / yp / ypp)", "type": "string", "default": "yp", "required": true, "min": [], "feature": "" },
+      { "key": "ndp", "label": "Zīmes aiz komata", "type": "int", "default": 4, "required": true, "min": 0, "feature": "" }
+    ],
+    "template_file": "task_ode2_cauchy_2nd_order.tmpl",
+    "title": "Koši problēma — 2. kārtas ODE (ode45)"
+  }
+]

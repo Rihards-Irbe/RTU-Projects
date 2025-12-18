@@ -1,0 +1,16 @@
+plot_xmin = <var(plot_xmin)>;
+plot_xmax = <var(plot_xmax)>;
+plot_ymin = <var(plot_ymin)>;
+plot_ymax = <var(plot_ymax)>;
+h         = <var(h)>;
+
+figure
+x_pr = plot_xmin:h:plot_xmax;
+plot(x_pr, f(x_pr), 'r', 'LineWidth', 3), grid on
+title('Funkcijas f(x) grafiks')
+xlabel('x'), ylabel('f(x)')
+xlim([plot_xmin plot_xmax])
+ylim([plot_ymin plot_ymax])
+hold on
+plot([plot_xmin plot_xmax], [0 0], 'k--')
+hold off

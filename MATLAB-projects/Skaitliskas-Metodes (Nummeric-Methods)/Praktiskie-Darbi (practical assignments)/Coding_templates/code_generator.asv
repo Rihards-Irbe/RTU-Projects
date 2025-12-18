@@ -1,0 +1,664 @@
+function varargout = code_generator(action, varargin)
+% CODE_GENERATOR  Template-driven .m generation + template CRUD + autofill.
+%
+% Actions:
+%   reg = code_generator('load_registry')
+%   txt = code_generator('render', templateId, inputsStruct, opts?)
+%   out = code_generator('generate', templateId, inputsStruct, outFile, opts?)
+%   id  = code_generator('add_template', metaStruct, templateText)
+%   id  = code_generator('update_template', oldId, metaStruct, templateText)
+%
+% opts.autofill_enabled (optional):
+%   struct array with fields: fn, enabled
+%   used to override meta.autofill(i).enabled at runtime (GUI toggles).
+
+    action = lower(string(action));
+
+    switch action
+        case "load_registry"
+            varargout{1} = load_registry();
+
+        case "render"
+            templateId = string(varargin{1});
+            inputs     = varargin{2};
+            opts = struct();
+            if numel(varargin) >= 3, opts = varargin{3}; end
+            varargout{1} = render_template(templateId, inputs, opts);
+
+        case "generate"
+            templateId = string(varargin{1});
+            inputs     = varargin{2};
+            outFile    = string(varargin{3});
+            opts = struct();
+            if numel(varargin) >= 4, opts = varargin{4}; end
+            varargout{1} = generate_file(templateId, inputs, outFile, opts);
+
+        case "add_template"
+            meta    = varargin{1};
+            tplText = varargin{2};
+            varargout{1} = add_template(meta, tplText);
+
+        case "update_template"
+            oldId   = string(varargin{1});
+            meta    = varargin{2};
+            tplText = varargin{3};
+            varargout{1} = update_template(oldId, meta, tplText);
+
+        otherwise
+            error("code_generator: Unknown action '%s'", action);
+    end
+end
+
+% =================== Registry / Template I/O ===================
+
+function regA = load_registry()
+    tplDir  = code_helpers("get_templates_dir");
+    regPath = fullfile(tplDir, "registry.json");
+
+    regC = read_registry_cell(regPath);
+    regA = normalizeRegistryFromCell(regC);
+end
+
+function [meta, tplText] = load_template(templateId)
+    reg = load_registry();
+    idx = find(strcmp(string({reg.id}), string(templateId)), 1);
+    if isempty(idx)
+        error("Template id not found: %s", templateId);
+    end
+    meta = reg(idx);
+
+    tplDir  = code_helpers("get_templates_dir");
+    tplPath = fullfile(tplDir, string(meta.template_file));
+    if ~exist(tplPath, "file")
+        error("Template file missing: %s", tplPath);
+    end
+    tplText = fileread(tplPath);
+end
+
+% =================== Render / Generate ===================
+
+function rendered = render_template(templateId, inputs, opts)
+    % Add default opts if not provided
+    if nargin < 3
+        opts = struct();
+    end
+    
+    [meta, tplText] = load_template(templateId);
+
+    % NEW: fill missing inputs with defaults from meta.inputs
+    inputs = apply_defaults(meta, inputs);
+
+    % existing autofill
+    inputs = apply_autofill(meta, inputs, tplText, opts);
+
+    body = code_template_engine(tplText, inputs);
+
+    header = sprintf("%%%% Generated from template: %s\n%%%% %s\n%%%% %s\n\n", ...
+        string(templateId), string(meta.title), datestr(now));
+
+    rendered = [header body];
+end
+
+function outPath = generate_file(templateId, inputs, outFile, opts)
+    outFile = code_helpers("normalize_filename", outFile, templateId + ".m");
+    rendered = render_template(templateId, inputs, opts);
+
+    fid = fopen(outFile, "w");
+    if fid < 0
+        error("Cannot write output file: %s", outFile);
+    end
+    c = onCleanup(@() fclose(fid)); %#ok<NASGU>
+    fprintf(fid, "%s", rendered);
+
+    outPath = outFile;
+end
+
+% =================== Template CRUD ===================
+
+function newId = add_template(meta, templateText)
+    tplDir  = code_helpers("get_templates_dir");
+    if ~exist(tplDir, "dir"), mkdir(tplDir); end
+
+    regPath = fullfile(tplDir, "registry.json");
+
+    meta = normalizeMeta(meta);
+
+    regC = read_registry_cell(regPath);
+    regA = normalizeRegistryFromCell(regC);
+
+    if ~isempty(regA) && any(strcmp(string({regA.id}), string(meta.id)))
+        error("Template id already exists: %s", string(meta.id));
+    end
+
+    tplFile = string(meta.id) + ".tmpl";
+    tplPath = fullfile(tplDir, tplFile);
+
+    fid = fopen(tplPath, "w");
+    if fid < 0, error("Cannot write template file: %s", tplPath); end
+    c = onCleanup(@() fclose(fid)); %#ok<NASGU>
+    fprintf(fid, "%s", char(string(templateText)));
+
+    entry = struct();
+    entry.id            = char(string(meta.id));
+    entry.title         = char(string(meta.title));
+    entry.description   = char(string(meta.description));
+    entry.template_file = char(tplFile);
+    entry.inputs        = normalizeInputsForJson(meta.inputs);
+    entry.autofill      = normalizeAutofillForJson(getfield_or_empty(meta,"autofill"));
+
+    regC{end+1} = entry; %#ok<AGROW>
+
+    regA2 = normalizeRegistryFromCell(regC);
+    write_registry_struct(regPath, regA2);
+
+    newId = string(meta.id);
+end
+
+function newId = update_template(oldId, meta, templateText)
+    tplDir  = code_helpers("get_templates_dir");
+    regPath = fullfile(tplDir, "registry.json");
+
+    if ~exist(regPath, "file")
+        error("registry.json not found.");
+    end
+
+    regC = read_registry_cell(regPath);
+    regA = normalizeRegistryFromCell(regC);
+
+    idx = find(strcmp(string({regA.id}), string(oldId)), 1);
+    if isempty(idx)
+        error("Template not found: %s", oldId);
+    end
+
+    meta = normalizeMeta(meta);
+    newId = string(meta.id);
+
+    if newId ~= string(oldId)
+        if any(strcmp(string({regA.id}), newId))
+            error("Cannot change id to '%s' because it already exists.", newId);
+        end
+    end
+
+    newTplFile = newId + ".tmpl";
+    newTplPath = fullfile(tplDir, newTplFile);
+
+    fid = fopen(newTplPath, "w");
+    if fid < 0, error("Cannot write template file: %s", newTplPath); end
+    c = onCleanup(@() fclose(fid)); %#ok<NASGU>
+    fprintf(fid, "%s", char(string(templateText)));
+
+    if newId ~= string(oldId)
+        oldTplPath = fullfile(tplDir, string(oldId) + ".tmpl");
+        if exist(oldTplPath, "file")
+            try, delete(oldTplPath); catch, end %#ok<CTCH>
+        end
+    end
+
+    s = regC{idx};
+    if ~isstruct(s)
+        error("Registry element %d is not a struct.", idx);
+    end
+
+    s.id            = char(newId);
+    s.title         = char(string(meta.title));
+    s.description   = char(string(meta.description));
+    s.template_file = char(newTplFile);
+    s.inputs        = normalizeInputsForJson(meta.inputs);
+    s.autofill      = normalizeAutofillForJson(getfield_or_empty(meta,"autofill"));
+
+    regC{idx} = s;
+
+    regA2 = normalizeRegistryFromCell(regC);
+    write_registry_struct(regPath, regA2);
+end
+
+% =================== Registry read/write helpers ===================
+
+function regC = read_registry_cell(regPath)
+    if ~exist(regPath, "file")
+        regC = {};
+        return;
+    end
+
+    raw = jsondecode(fileread(regPath));
+
+    if isempty(raw)
+        regC = {};
+        return;
+    end
+
+    if isstruct(raw)
+        regC = num2cell(raw);
+        return;
+    end
+
+    if iscell(raw)
+        if ~all(cellfun(@isstruct, raw))
+            error("registry.json decoded to a cell array but contains non-struct elements.");
+        end
+        regC = raw;
+        return;
+    end
+
+    error("registry.json decoded to unsupported type: %s", class(raw));
+end
+
+function write_registry_struct(regPath, regA)
+    regA = normalizeRegistryStructArray(regA);
+
+    try
+        txt = jsonencode(regA, PrettyPrint=true);
+    catch
+        txt = jsonencode(regA);
+    end
+
+    fid = fopen(regPath, "w");
+    if fid < 0
+        error("Cannot write registry: %s", regPath);
+    end
+    c = onCleanup(@() fclose(fid)); %#ok<NASGU>
+    fprintf(fid, "%s", txt);
+end
+
+function regA = normalizeRegistryFromCell(regC)
+    if isempty(regC)
+        regA = struct([]);
+        return;
+    end
+
+    allF = {};
+    for i = 1:numel(regC)
+        allF = union(allF, fieldnames(regC{i}));
+    end
+    minF = {'id','title','description','template_file','inputs','autofill'};
+    allF = union(allF, minF);
+
+    proto = struct();
+    for k = 1:numel(allF)
+        proto.(allF{k}) = [];
+    end
+
+    regA = repmat(proto, 1, numel(regC));
+    for i = 1:numel(regC)
+        s = regC{i};
+        fn = fieldnames(s);
+        for k = 1:numel(fn)
+            regA(i).(fn{k}) = s.(fn{k});
+        end
+    end
+end
+
+function regA = normalizeRegistryStructArray(regA)
+    if isempty(regA)
+        regA = struct([]);
+        return;
+    end
+    allF = {};
+    for i = 1:numel(regA)
+        allF = union(allF, fieldnames(regA(i)));
+    end
+    minF = {'id','title','description','template_file','inputs','autofill'};
+    allF = union(allF, minF);
+
+    for k = 1:numel(allF)
+        f = allF{k};
+        if ~isfield(regA, f)
+            [regA.(f)] = deal([]); %#ok<AGROW>
+        end
+    end
+end
+
+% =================== AUTO-FILL (calls callable_functions.m) ===================
+
+% =================== AUTO-FILL (calls callable_functions.m) ===================
+
+function inputs = apply_autofill(meta, inputs, templateText, opts)
+    % Add default opts parameter
+    if nargin < 4
+        opts = struct();
+    end
+    
+    [~, keys] = scan_placeholders(templateText);
+    needed = unique(keys, 'stable');
+
+    present = string(fieldnames(inputs));
+    missing = setdiff(needed, present);
+
+    if isempty(missing)
+        return;
+    end
+
+    af = normalizeAutofill(getfield_or_empty(meta,"autofill"));
+    af = apply_enabled_overrides(af, getfield_or_empty(opts,"autofill_enabled"));
+
+    for i = 1:numel(af)
+        if ~logicalDefault(getfield_or_empty(af(i),"enabled")), continue; end %#ok<GFLD>
+
+        fn = string(getfield_or_empty(af(i),"fn"));
+        provides = stringArrayOrEmpty(getfield_or_empty(af(i),"provides"));
+        argsKeys = stringArrayOrEmpty(getfield_or_empty(af(i),"args"));
+
+        if fn == "" || isempty(provides)
+            continue;
+        end
+
+        needThis = intersect(provides, missing);
+        if isempty(needThis)
+            continue;
+        end
+
+        % Build args
+        argVals = cell(1, numel(argsKeys));
+        for k = 1:numel(argsKeys)
+            ak = argsKeys(k);
+            if ~isfield(inputs, ak)
+                error("Autofill '%s' requires input '%s' but it is missing.", fn, ak);
+            end
+            argVals{k} = inputs.(ak);
+        end
+
+        % ---- key change: call whitelist dispatcher ----
+        fprintf('DEBUG: Calling autofill function: %s\n', fn);
+        fprintf('DEBUG: Args: %s\n', strjoin(string(argsKeys), ', '));
+        fprintf('DEBUG: Provides: %s\n', strjoin(string(provides), ', '));
+        
+        outputs = callable_functions('call', fn, provides, argVals);
+
+        for k = 1:numel(provides)
+            key = provides(k);
+            if any(missing == key)
+                inputs.(key) = outputs{k};
+                fprintf('DEBUG: Set %s = %s\n', key, mat2str(outputs{k}));
+            end
+        end
+
+        present = string(fieldnames(inputs));
+        missing = setdiff(needed, present);
+
+        if isempty(missing)
+            return;
+        end
+    end
+
+    if ~isempty(missing)
+        error("Missing required inputs after autofill: %s", strjoin(missing, ", "));
+    end
+end
+
+function [kinds, keys] = scan_placeholders(txt)
+    txt = string(txt);
+    pat = '<\s*(equation|expr|var|variable|func|function)\s*\(\s*([A-Za-z]\w*)\s*\)\s*>';
+    tok = regexp(txt, pat, 'tokens');
+
+    kinds = strings(0,1);
+    keys  = strings(0,1);
+    for i = 1:numel(tok)
+        kinds(end+1) = string(tok{i}{1}); %#ok<AGROW>
+        keys(end+1)  = string(tok{i}{2}); %#ok<AGROW>
+    end
+end
+
+function af = apply_enabled_overrides(af, overrides)
+    if isempty(af) || isempty(overrides), return; end
+    try
+        ov = overrides;
+        if isstruct(ov)
+            for i = 1:numel(af)
+                for j = 1:numel(ov)
+                    if string(af(i).fn) == string(ov(j).fn)
+                        af(i).enabled = logical(ov(j).enabled);
+                    end
+                end
+            end
+        end
+    catch
+        % ignore override issues
+    end
+end
+
+function [kinds, keys] = scan_placeholders(txt)
+    txt = string(txt);
+    pat = '<\s*(equation|expr|var|variable|func|function)\s*\(\s*([A-Za-z]\w*)\s*\)\s*>';
+    tok = regexp(txt, pat, 'tokens');
+
+    kinds = strings(0,1);
+    keys  = strings(0,1);
+    for i = 1:numel(tok)
+        kinds(end+1) = string(tok{i}{1}); %#ok<AGROW>
+        keys(end+1)  = string(tok{i}{2}); %#ok<AGROW>
+    end
+end
+
+function af = apply_enabled_overrides(af, overrides)
+    if isempty(af) || isempty(overrides), return; end
+    try
+        ov = overrides;
+        if isstruct(ov)
+            for i = 1:numel(af)
+                for j = 1:numel(ov)
+                    if string(af(i).fn) == string(ov(j).fn)
+                        af(i).enabled = logical(ov(j).enabled);
+                    end
+                end
+            end
+        end
+    catch
+        % ignore override issues
+    end
+end
+
+function af = normalizeAutofill(afField)
+    if isempty(afField)
+        af = struct([]);
+        return;
+    end
+    if isstruct(afField)
+        af = afField;
+        return;
+    end
+    if iscell(afField) && all(cellfun(@isstruct, afField))
+        af = [afField{:}];
+        return;
+    end
+    error("Unsupported registry format for 'autofill'.");
+end
+
+% =================== Normalization helpers ===================
+
+function meta = normalizeMeta(meta)
+    if ~isfield(meta,'id') || strtrim(string(meta.id)) == ""
+        error("Meta.id is required.");
+    end
+    if ~isfield(meta,'title') || strtrim(string(meta.title)) == ""
+        error("Meta.title is required.");
+    end
+    if ~isfield(meta,'description'), meta.description = ""; end
+    if ~isfield(meta,'inputs'), meta.inputs = struct([]); end
+    if ~isfield(meta,'autofill'), meta.autofill = struct([]); end
+
+    id = string(meta.id);
+    if isempty(regexp(id, '^[A-Za-z]\w*$', 'once'))
+        error("Template id must match ^[A-Za-z]\\w*$ (letters/digits/_), got: %s", id);
+    end
+end
+
+function inputsOut = normalizeInputsForJson(inputsIn)
+    if isempty(inputsIn)
+        inputsOut = struct([]);
+        return;
+    end
+    if iscell(inputsIn)
+        inputsIn = [inputsIn{:}];
+    end
+
+    allFields = {'key','label','type','default','required','min'};
+    proto = struct();
+    for k = 1:numel(allFields)
+        proto.(allFields{k}) = [];
+    end
+
+    inputsOut = repmat(proto, 1, numel(inputsIn));
+    for i = 1:numel(inputsIn)
+        s = inputsIn(i);
+        fn = fieldnames(s);
+        for k = 1:numel(fn)
+            inputsOut(i).(fn{k}) = s.(fn{k});
+        end
+    end
+end
+
+function afOut = normalizeAutofillForJson(afIn)
+    if isempty(afIn)
+        afOut = struct([]);
+        return;
+    end
+    if iscell(afIn)
+        afIn = [afIn{:}];
+    end
+
+    allFields = {'enabled','fn','args','provides'};
+    proto = struct();
+    for k = 1:numel(allFields)
+        proto.(allFields{k}) = [];
+    end
+
+    afOut = repmat(proto, 1, numel(afIn));
+    for i = 1:numel(afIn)
+        s = afIn(i);
+        fn = fieldnames(s);
+        for k = 1:numel(fn)
+            afOut(i).(fn{k}) = s.(fn{k});
+        end
+    end
+end
+
+function v = getfield_or_empty(s, field)
+    if isstruct(s) && isfield(s, field)
+        v = s.(field);
+    else
+        v = [];
+    end
+end
+
+function b = logicalDefault(v)
+    try
+        if isempty(v), b = false; else b = logical(v); end
+    catch
+        b = false;
+    end
+end
+
+function a = stringArrayOrEmpty(v)
+    if isempty(v), a = strings(0,1); else a = string(v); end
+end
+
+function inputs = apply_defaults(meta, inputs)
+    if ~isfield(meta, "inputs") || isempty(meta.inputs)
+        return;
+    end
+
+    inArr = meta.inputs;
+    if iscell(inArr)
+        inArr = [inArr{:}];
+    end
+
+    for i = 1:numel(inArr)
+        key = string(inArr(i).key);
+        hasField = isfield(inputs, key);
+
+        def = [];
+        if isfield(inArr(i), "default")
+            def = inArr(i).default;
+        end
+
+        if ~hasField
+            if ~isempty(def) || (isnumeric(def) || islogical(def))
+                inputs.(key) = def;
+            end
+        else
+            % if empty string and default exists, fill it
+            v = inputs.(key);
+            if (isstring(v) || ischar(v)) && strtrim(string(v))=="" && ~isempty(def)
+                inputs.(key) = def;
+            end
+        end
+    end
+end
+
+function out = code_template_engine(templateText, inputs)
+% CODE_TEMPLATE_ENGINE Replace placeholders:
+%   <equation(key)>  -> @(x) <matlab_expr_of_zero_form>
+%   <expr(key)>      -> <symbolic_expr_of_zero_form>
+%   <var(key)> or <variable(key)> -> formatted scalar/vector/string
+%   <func(key)> or <function(key)> -> function handle like @auto_roots_1d
+    out = string(templateText);
+    pattern = '<\s*(equation|expr|var|variable|func|function)\s*\(\s*([A-Za-z]\w*)\s*\)\s*>';
+    [matches, starts, ends, tokens] = regexp(out, pattern, 'match', 'start', 'end', 'tokens'); %#ok<ASGLU>
+
+    for i = numel(starts):-1:1
+        kind = lower(string(tokens{i}{1}));
+        key  = string(tokens{i}{2});
+
+        if ~isfield(inputs, key)
+            error("Template missing required input: %s", key);
+        end
+        val = inputs.(key);
+        rep = "";
+
+        switch kind
+            case "equation"
+                f0  = code_helpers("to_zero_form", string(val));
+                fM  = code_helpers("make_matlab_expr", f0);
+                rep = "@(x) " + string(fM);
+
+            case "expr"
+                f0  = code_helpers("to_zero_form", string(val));
+                fS  = code_helpers("make_symbolic_expr", f0);
+                rep = string(fS);
+
+            case {"var","variable"}
+                rep = code_helpers("format_value", val);
+
+            case {"func","function"}
+                % Allow empty/optional function placeholders
+                if isempty(val) || (isstring(val) || ischar(val)) && strtrim(string(val)) == ""
+                    rep = "[]";  % or you could use: rep = "@(x)x" for a dummy function
+                else
+                    rep = format_function_handle(val);
+                end
+
+            otherwise
+                error("Unknown placeholder kind: %s", kind);
+        end
+
+        out = extractBefore(out, starts(i)) + rep + extractAfter(out, ends(i));
+    end
+    out = char(out);
+end
+
+function rep = format_function_handle(val)
+    if isa(val, 'function_handle')
+        s = string(func2str(val));
+        if startsWith(s, "@")
+            rep = s;
+        else
+            rep = "@" + s;
+        end
+        return;
+    end
+
+    if isstring(val) || ischar(val)
+        s = strtrim(string(val));
+        if s == ""
+            error("Function placeholder value is empty.");
+        end
+        if startsWith(s, "@")
+            rep = s;
+        else
+            rep = "@" + s;
+        end
+        return;
+    end
+
+    error("Function placeholder expects string/char/function_handle, got: %s", class(val));
+end

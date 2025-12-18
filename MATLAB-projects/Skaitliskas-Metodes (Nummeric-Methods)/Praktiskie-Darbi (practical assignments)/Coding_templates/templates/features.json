@@ -1,0 +1,8 @@
+[
+  { "feature": "graph_feature", "file": "graph_feature.tmpl", "description": "Draw f(x) graph with axis bounds." },
+  { "feature": "smallest_root_feature", "file": "smallest_root_feature.tmpl", "description": "Print smallest and largest root." },
+
+  { "feature": "system_area_feature", "file": "system_area_feature.tmpl", "description": "Parse inequalities like -1<=x1<=4, -3<=x2<=2 into bounds." },
+  { "feature": "system_graph_feature", "file": "system_graph_feature.tmpl", "description": "Plot f1=0 and f2=0 contours in the chosen area." },
+  { "feature": "system_findvar_feature", "file": "system_findvar_feature.tmpl", "description": "Print chosen variable x1/x2 with specified digits." }
+]

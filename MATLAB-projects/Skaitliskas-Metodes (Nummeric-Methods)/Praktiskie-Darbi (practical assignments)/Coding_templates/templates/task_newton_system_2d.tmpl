@@ -1,0 +1,58 @@
+%% Ņūtona metode — 2D sistēma
+clc, clearvars, format compact, close all, format longG
+
+% ---- System definition ----
+syms x1 x2
+xpr = [x1 x2];
+
+fun1 = <expr(eq1)>;
+fun2 = <expr(eq2)>;
+
+fun    = [fun1; fun2];
+fun_pr = jacobian(fun, xpr);
+
+% Numeric handles (for plot feature)
+f1 = matlabFunction(fun1, 'Vars', xpr);
+f2 = matlabFunction(fun2, 'Vars', xpr);
+
+%<FEATURE:area>
+%<FEATURE:plot>
+
+% ---- Newton iteration (book style) ----
+xapp = <var(xapp)>;
+xapp = xapp(:).';  % force row [x1 x2]
+
+iter = <var(iter)>;
+epsi = <var(epsi)>;
+
+k = 0;
+sol_norm = 1;
+M_pr = zeros(iter, 3);   % [x1 x2 norm]
+
+while sol_norm > epsi && k < iter
+    for i = 1:2
+        B(i,1) = -double(subs(fun(i), [x1 x2], xapp));
+        for j = 1:2
+            A(i,j) = double(subs(fun_pr(i,j), [x1 x2], xapp));
+        end
+    end
+
+    xdelta = A \ B;          % 2x1
+    xapp   = xapp + xdelta.'; % keep row
+
+    c = double(subs(fun, [x1 x2], xapp));
+    sol_norm = norm(c);
+
+    k = k + 1;
+    M_pr(k,1:2) = xapp;
+    M_pr(k,3)   = sol_norm;
+end
+
+M_pr = M_pr(1:k,:);
+
+disp('          x1                    x2                  kļūdas norma')
+disp(M_pr)
+
+%<FEATURE:output>
+
+format

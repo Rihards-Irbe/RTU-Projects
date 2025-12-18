@@ -1,0 +1,67 @@
+clc, clearvars, format compact, close all, format longG
+
+f = <equation(eq)>;
+
+%<FEATURE:plot>
+
+iter = <var(iter)>;
+epsi = <var(epsi)>;
+
+x0 = <var(x0)>;
+x1 = <var(x1)>;
+
+% allow user to enter scalars or vectors (multiple roots)
+x0 = x0(:).';
+x1 = x1(:).';
+
+if numel(x0) ~= numel(x1)
+    error('Sekanšu metode: x0 un x1 vektoru garumiem jābūt vienādiem.');
+end
+
+n_roots  = numel(x0);
+xapp_val = zeros(1, n_roots);
+
+for j = 1:n_roots
+    xnm1 = x0(j);   % x_{n-1}
+    xn   = x1(j);   % x_n
+
+    for k = 1:iter
+        f_n   = f(xn);
+        f_nm1 = f(xnm1);
+
+        den = (f_n - f_nm1);
+        if den == 0
+            error('Sekanšu metode: dalījums ar 0 (f(x_n)-f(x_{n-1}) = 0). Maini x0/x1.');
+        end
+
+        xnp1 = xn - f_n * (xn - xnm1) / den;
+
+        xnm1 = xn;
+        xn   = xnp1;
+
+        if abs(f(xn)) < epsi
+            break
+        end
+    end
+
+    xapp_val(j) = xn;
+end
+
+xapp_val = sort(xapp_val);
+
+%<FEATURE:after_sort>
+
+p = max(0, round(-log10(epsi)));
+
+fprintf('Atbilde. Sekanšu metode: vienādojumam ir %d saknes\n', n_roots)
+
+fprintf(' ')
+for k = 1:n_roots
+    if k == 1
+        fprintf('x%d = %.4f', k, xapp_val(k));
+    else
+        fprintf(', x%d = %.4f', k, xapp_val(k));
+    end
+end
+fprintf('\n')
+fprintf(' ar precizitāti 10^(-%d)\n', p)

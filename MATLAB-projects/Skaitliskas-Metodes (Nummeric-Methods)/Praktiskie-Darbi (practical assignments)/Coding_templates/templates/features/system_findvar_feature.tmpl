@@ -1,0 +1,13 @@
+% ---- Output: chosen variable ----
+target_var  = "<var(target_var)>";
+find_digits = <var(find_digits)>;
+
+if ~ismember(target_var, ["x1","x2"])
+    error('target_var must be "x1" or "x2". Got: %s', target_var);
+end
+
+idx = 1;
+if target_var == "x2", idx = 2; end
+
+fmt = sprintf('%%.%df', find_digits);
+fprintf('%s = %s\n', target_var, sprintf(fmt, xapp(idx)));
