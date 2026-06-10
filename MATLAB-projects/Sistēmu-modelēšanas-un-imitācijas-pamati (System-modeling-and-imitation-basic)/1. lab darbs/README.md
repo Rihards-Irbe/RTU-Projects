@@ -88,5 +88,3 @@ The cost went from ~$60-98 (heating) to $104.4 (cooling) because:
 Air conditioning typically costs more than heating
 The system is now removing heat instead of adding it
 Cooling requires more energy to maintain the same comfort level
-
-So yes - instead of the heater warming the house when it got cold, the system now cools the house when it gets hot! You successfully converted a heating system into an air conditioning system. 🌡️❄️
