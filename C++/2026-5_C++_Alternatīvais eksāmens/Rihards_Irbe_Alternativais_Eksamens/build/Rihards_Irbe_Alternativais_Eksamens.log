@@ -1,0 +1,14 @@
+﻿  pch.cpp
+  Attacker.cpp
+  Defender.cpp
+  Goalkeeper.cpp
+  Player.cpp
+  Rihards_Irbe_Alternativais_Eksamens.cpp
+     Creating library E:\C++\opp\Rihards_Irbe_Alternativais_Eksamens\x64\Release\Rihards_Irbe_Alternativais_Eksamens.lib and object E:\C++\opp\Rihards_Irbe_Alternativais_Eksamens\x64\Release\Rihards_Irbe_Alternativais_Eksamens.exp
+Rihards_Irbe_Alternativais_Eksamens.exp : warning LNK4070: /OUT:TeamRight.dll directive in .EXP differs from output filename 'E:\C++\opp\Rihards_Irbe_Alternativais_Eksamens\x64\Release\Rihards_Irbe_Alternativais_Eksamens.dll'; ignoring directive
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 206 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+Rihards_Irbe_Alternativais_Eksamens.exp : warning LNK4070: /OUT:TeamRight.dll directive in .EXP differs from output filename 'E:\C++\opp\Rihards_Irbe_Alternativais_Eksamens\x64\Release\Rihards_Irbe_Alternativais_Eksamens.dll'; ignoring directive
+  Rihards_Irbe_Alternativais_Eksamens.vcxproj -> E:\C++\opp\Rihards_Irbe_Alternativais_Eksamens\x64\Release\Rihards_Irbe_Alternativais_Eksamens.dll
